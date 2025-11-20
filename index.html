@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>狗狗年齡換算器</title>
+<style>
+  body {
+    background-color: #f8f5ef;
+    font-family: "Segoe UI", sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  .container {
+    max-width: 420px;
+    background: white;
+    margin: 40px auto;
+    padding: 25px 30px;
+    border-radius: 15px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+  h1 {
+    font-size: 26px;
+    margin-bottom: 20px;
+    color: #444;
+  }
+  img {
+    width: 90%;
+    border-radius: 12px;
+    margin-bottom: 20px;
+  }
+  label {
+    display: block;
+    margin-top: 12px;
+    font-size: 16px;
+    color: #555;
+    text-align: left;
+  }
+  select, input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+  }
+  button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    background-color: #ffb54c;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 17px;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #ffa726;
+  }
+  .result {
+    margin-top: 20px;
+    font-size: 19px;
+    font-weight: bold;
+    color: #444;
+    line-height: 1.6;
+  }
+</style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>狗狗年齡換算器</h1>
+    <img src="https://hackmd.io/_uploads/Hyc4usZlWe.png">
+
+    <label>狗狗體型</label>
+    <select id="size">
+      <option value="small">迷你 / 小型犬</option>
+      <option value="medium">中型犬</option>
+      <option value="large">大型犬</option>
+      <option value="giant">巨型犬</option>
+    </select>
+
+    <label>狗狗出生年月日</label>
+    <input type="date" id="birth">
+
+    <button onclick="calc()">開始換算</button>
+
+    <div class="result" id="result"></div>
+  </div>
+
+<script>
+const KEY_DATA = "dog-age-data";
+
+// 頁面載入時讀取 localStorage
+window.onload = function () {
+  const saved = localStorage.getItem(KEY_DATA);
+  if (saved) {
+    const data = JSON.parse(saved);
+    document.getElementById("size").value = data.size;
+    document.getElementById("birth").value = data.birth;
+    document.getElementById("result").innerHTML = data.resultHTML;
+  }
+};
+
+function calc() {
+  const size = document.getElementById("size").value;
+  const birth = document.getElementById("birth").value;
+  const result = document.getElementById("result");
+
+  if (!birth) {
+    result.textContent = "請輸入正確的出生日期";
+    return;
+  }
+
+  const birthDate = new Date(birth);
+  const today = new Date();
+
+  // 計算精準年齡（小數點第一位）
+  const diffMs = today - birthDate;
+  const ageYears = (diffMs / (1000 * 60 * 60 * 24 * 365)).toFixed(1);
+
+  if (ageYears < 0) {
+    result.textContent = "出生日期不可超過今天";
+    return;
+  }
+
+  const table = {
+    small: [15,24,28,32,36,40,44,48,52,56],
+    medium:[15,24,28,32,36,42,47,51,56,60],
+    large: [15,24,28,32,36,45,50,55,61,66],
+    giant: [12,22,31,38,45,49,56,64,71,78]
+  };
+
+  let intAge = Math.floor(ageYears);
+
+  let humanAge =
+    intAge <= 10
+      ? table[size][intAge - 1] + (ageYears - intAge) * 1.2
+      : table[size][9] + (intAge - 10) * 7 + (ageYears - intAge) * 7;
+
+  humanAge = humanAge.toFixed(1);
+
+  let outputHTML =
+    `狗狗實際年齡：約 <span style="color:#e28a3d">${ageYears}</span> 歲<br>
+     換算人類年齡：約 <span style="color:#e28a3d">${humanAge}</span> 歲`;
+
+  result.innerHTML = outputHTML;
+
+  // 存入 localStorage
+  const saveObj = {
+    size: size,
+    birth: birth,
+    resultHTML: outputHTML
+  };
+  localStorage.setItem(KEY_DATA, JSON.stringify(saveObj));
+}
+</script>
+
+</body>
+</html>
